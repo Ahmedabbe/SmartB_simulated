@@ -1,0 +1,182 @@
+[
+    {
+        "id": "97e2fe09e2052a13",
+        "type": "tab",
+        "label": "SmartB_data-gen",
+        "disabled": false,
+        "info": "Smart beehive data-sim generator",
+        "env": []
+    },
+    {
+        "id": "5727251a0d55a67a",
+        "type": "inject",
+        "z": "97e2fe09e2052a13",
+        "name": "",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1800",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "SimData",
+        "x": 110,
+        "y": 500,
+        "wires": [
+            [
+                "888edaf9087988c5"
+            ]
+        ]
+    },
+    {
+        "id": "190bbaff6a608a03",
+        "type": "openweathermap",
+        "z": "97e2fe09e2052a13",
+        "name": "",
+        "wtype": "current",
+        "lon": "",
+        "lat": "",
+        "city": "Stockholm",
+        "country": "SE",
+        "language": "en",
+        "x": 270,
+        "y": 660,
+        "wires": [
+            [
+                "b2346708a4364924"
+            ]
+        ]
+    },
+    {
+        "id": "a83cc85a44c5a4cf",
+        "type": "debug",
+        "z": "97e2fe09e2052a13",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 770,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "45cef2e7b5079dfd",
+        "type": "inject",
+        "z": "97e2fe09e2052a13",
+        "name": "",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1800",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "owmAPI",
+        "x": 100,
+        "y": 660,
+        "wires": [
+            [
+                "190bbaff6a608a03"
+            ]
+        ]
+    },
+    {
+        "id": "888edaf9087988c5",
+        "type": "function",
+        "z": "97e2fe09e2052a13",
+        "name": "Generate Payload",
+        "func": "var lat = 59.5163377;\nvar lon = 17.9106652;\nvar beeHive = \"2A\";\nvar randomTemp = (Math.random() * (20 - 16) + 16).toFixed(1);  //random temp from 5.0 to 20.0 degrees\nvar randomHumidity = (Math.random() * (80 - 40) + 40).toFixed(1);  //random humidty from 40.0 to 80.0 percent\nvar randomDecibel = (Math.random() * (60 - 46) + 46).toFixed(1); //random noise level from 46.0 to 85.0 decibel\nvar timeIndex = Date.now();\n\n\n// UNCOMMENT TO FORMAT TIME TO LOCAL \"2021/12/27 <17:33:18>\"\n/*\n\n//This function below gets date and time and displays it via shortDate variable\nvar timeStamp = new Date().toLocaleTimeString();\nvar dateObj= new Date();\nvar newDate = dateObj.getFullYear() + '/' + ('0' + (dateObj.getMonth() + 1)).slice(-2) + '/' + ('0' + dateObj.getDate()).slice(-2) + ' <' + timeStamp + '>';\n*/\n// var month = ('0' + (dateObj.getMonth() + 1)).slice(-2);\n// var date = ('0' + dateObj.getDate()).slice(-2);\n// var year = dateObj.getFullYear();\n// var dateTime = year + '/' + month + '/' + date + ' <' + timeStamp + '>';\n\nmsg.payload = \n            {\n               //\"uid\" : timeIndex,\n               \"timeStamp\" : timeIndex,\n                \"coord\" : \n                {\n                    \"lat\" : lat,\n                    \"lon\" : lon\n                },\n                \"beeHive\" : beeHive,\n                \"Temp\" : randomTemp,\n                \"Humidity\" : randomHumidity,\n                \"NoiseLevel\" : randomDecibel\n            };\n\n//msg.payload = JSON.stringify(msg.payload);\nmsg.filename = String(timeIndex);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 500,
+        "wires": [
+            [
+                "a83cc85a44c5a4cf",
+                "395c1121c3bfe36e"
+            ]
+        ]
+    },
+    {
+        "id": "b2346708a4364924",
+        "type": "function",
+        "z": "97e2fe09e2052a13",
+        "name": "Extract API values",
+        "func": "msg.payload = \n            {\n               //\"uid\" : msg.payload.id,\n               \"timeStamp\" : msg.data.dt,\n                \"coord\" : \n                {\n                    \"lat\" : msg.location.lat,\n                    \"lon\" : msg.location.lon\n                },\n                \"City\" : msg.location.city,\n                \"Weather\": msg.payload.detail,\n                \"Temp\" : msg.payload.tempc,\n                \"Humidity\" : msg.payload.humidity\n            };\n\n//msg.payload = JSON.stringify(msg.payload);\nmsg.filename = String(msg.data.dt);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 660,
+        "wires": [
+            [
+                "a83cc85a44c5a4cf",
+                "40def36e595426f3"
+            ]
+        ]
+    },
+    {
+        "id": "395c1121c3bfe36e",
+        "type": "amazon s3 out",
+        "z": "97e2fe09e2052a13",
+        "aws": "",
+        "bucket": "iot20simdata",
+        "filename": "",
+        "localFilename": "",
+        "region": "eu-north-1",
+        "name": "Store in s3 sim bucket",
+        "x": 700,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "40def36e595426f3",
+        "type": "amazon s3 out",
+        "z": "97e2fe09e2052a13",
+        "aws": "",
+        "bucket": "openwm.api",
+        "filename": "",
+        "localFilename": "",
+        "region": "eu-north-1",
+        "name": "Store in s3 bucket",
+        "x": 700,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "566ae85eb70605b0",
+        "type": "comment",
+        "z": "97e2fe09e2052a13",
+        "name": "Simulate hive sensor values -> s3 bucket",
+        "info": "",
+        "x": 400,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "05c39caa44746266",
+        "type": "comment",
+        "z": "97e2fe09e2052a13",
+        "name": "Retrieve and format API values -> s3 bucket",
+        "info": "",
+        "x": 430,
+        "y": 720,
+        "wires": []
+    }
+]
