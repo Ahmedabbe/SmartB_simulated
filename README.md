@@ -22,7 +22,7 @@ Monitoring weight of the entire hive would also be very useful, particularly dur
 
 ![Untitled Diagram drawio(1)](https://user-images.githubusercontent.com/70702026/147887574-a8469d3a-e7fa-4253-92b5-361ceb5809f0.png)
 
-*NodeRed flow:*
+*NodeRed flow:*  
 ![Screenshot 2022-01-01 at 14-33-06 Node-RED](https://user-images.githubusercontent.com/70702026/147887589-47143b46-885a-4f55-a25c-c6869e3e806e.png)
 
 
